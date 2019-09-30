@@ -29,7 +29,7 @@ import socket
 
 from .py3compat import StringIO
 
-from .ssh_exception import CouldNotCanonicalize
+from .ssh_exception import CouldNotCanonicalize, ConfigParseError
 
 
 SSH_PORT = 22
@@ -117,7 +117,7 @@ class SSHConfig(object):
             # Parse line into key, value
             match = re.match(self.SETTINGS_REGEX, line)
             if not match:
-                raise Exception("Unparsable line {}".format(line))
+                raise ConfigParseError("Unparsable line {}".format(line))
             key = match.group(1).lower()
             value = match.group(2)
 
@@ -364,7 +364,7 @@ class SSHConfig(object):
         try:
             return shlex.split(host)
         except ValueError:
-            raise Exception("Unparsable host {}".format(host))
+            raise ConfigParseError("Unparsable host {}".format(host))
 
 
 def _addressfamily_host_lookup(hostname, options):

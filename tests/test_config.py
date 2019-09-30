@@ -7,7 +7,12 @@ from socket import gaierror
 from mock import patch
 from pytest import raises, mark, fixture
 
-from paramiko import SSHConfig, SSHConfigDict, CouldNotCanonicalize
+from paramiko import (
+    SSHConfig,
+    SSHConfigDict,
+    CouldNotCanonicalize,
+    ConfigParseError,
+)
 from paramiko.util import lookup_ssh_host_config
 
 from .util import _config
@@ -351,8 +356,12 @@ Host param3 parara
         for host, values in correct_data.items():
             assert conf._get_hosts(host) == values
         for host in incorrect_data:
-            with raises(Exception):
+            with raises(ConfigParseError):
                 conf._get_hosts(host)
+
+    def test_invalid_line_format_excepts(self):
+        with raises(ConfigParseError):
+            load_config("invalid")
 
     def test_proxycommand_none_issue_418(self):
         config = SSHConfig.from_text(

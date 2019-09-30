@@ -2,6 +2,11 @@
 Changelog
 =========
 
+- :feature:`-` A couple of outright `~paramiko.config.SSHConfig` parse errors
+  were previously represented as vanilla ``Exception`` instances; as part of
+  recent feature work a more specific exception class,
+  `~paramiko.ssh_exception.ConfigParseError`, has been created. It is now also
+  used in those older spots, which is naturally backwards compatible.
 - :feature:`717` Implement support for the ``Match`` keyword in ``ssh_config``
   files. Previously, this keyword was simply ignored & keywords inside such
   blocks were treated as if they were part of the previous block. Thanks to
