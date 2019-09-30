@@ -110,23 +110,28 @@ class SSHConfig(object):
             # Strip any leading or trailing whitespace from the line.
             # Refer to https://github.com/paramiko/paramiko/issues/499
             line = line.strip()
+            # Skip blanks, comments
             if not line or line.startswith("#"):
                 continue
 
+            # Parse line into key, value
             match = re.match(self.SETTINGS_REGEX, line)
             if not match:
                 raise Exception("Unparsable line {}".format(line))
             key = match.group(1).lower()
             value = match.group(2)
 
+            # Host keyword triggers switch to new block/context
             if key == "host":
                 self._config.append(host)
                 host = {"host": self._get_hosts(value), "config": {}}
+            # Special-case for noop ProxyCommands
             elif key == "proxycommand" and value.lower() == "none":
                 # Store 'none' as None; prior to 3.x, it will get stripped out
                 # at the end (for compatibility with issue #415). After 3.x, it
                 # will simply not get stripped, leaving a nice explicit marker.
                 host["config"][key] = None
+            # All other keywords get stored, directly or via append
             else:
                 if value.startswith('"') and value.endswith('"'):
                     value = value[1:-1]
@@ -141,6 +146,7 @@ class SSHConfig(object):
                         host["config"][key] = [value]
                 elif key not in host["config"]:
                     host["config"][key] = value
+        # Store last 'open' block and we're done
         self._config.append(host)
 
     def lookup(self, hostname):
