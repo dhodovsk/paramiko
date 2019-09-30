@@ -149,9 +149,9 @@ class SSHConfig(object):
 
         The host-matching rules of OpenSSH's ``ssh_config`` man page are used:
         For each parameter, the first obtained value will be used.  The
-        configuration files contain sections separated by ``Host``
-        specifications, and that section is only applied for hosts that match
-        one of the patterns given in the specification.
+        configuration files contain sections separated by ``Host`` and/or
+        ``Match`` specifications, and that section is only applied for hosts
+        which match the given patterns or keywords
 
         Since the first obtained value for each parameter is used, more host-
         specific declarations should be given near the beginning of the file,
@@ -174,6 +174,8 @@ class SSHConfig(object):
             Returns `SSHConfigDict` objects instead of dict literals.
         .. versionchanged:: 2.7
             Added canonicalization support.
+        .. versionchanged:: 2.7
+            Added ``Match`` support.
         """
         # First pass
         options = self._lookup(hostname=hostname)

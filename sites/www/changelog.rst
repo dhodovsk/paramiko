@@ -2,6 +2,10 @@
 Changelog
 =========
 
+- :feature:`717` Implement support for the ``Match`` keyword in ``ssh_config``
+  files. Previously, this keyword was simply ignored & keywords inside such
+  blocks were treated as if they were part of the previous block. Thanks to
+  Michael Leinartas for the initial patchset.
 - :bug:`- major` Perform deduplication of ``IdentityFile`` contents during
   ``ssh_config`` parsing; previously, if your config would result in the same
   value being encountered more than once, ``IdentityFile`` would contain that

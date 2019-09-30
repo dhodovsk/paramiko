@@ -61,6 +61,10 @@ Paramiko releases) are included. A keyword by itself means no known departures.
 
 - ``Host``
 - ``HostName``: used in ``%h`` :ref:`token expansion <TOKENS>`
+- ``Match``
+
+    .. versionadded:: 2.7
+
 - ``Port``: supplies potential values for ``%p`` :ref:`token expansion
   <TOKENS>`.
 - ``ProxyCommand``: see our `.ProxyCommand` class for an easy
