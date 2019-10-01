@@ -1,0 +1,11 @@
+CanonicalizeHostname yes
+CanonicalDomains paramiko.org
+
+# Sentinel forcing 'Match not working at all' to fail
+Host specific
+    HostName whatevs
+
+Match all canonical
+    User oops
+
+# vim:set ft=sshconfig :

@@ -1,0 +1,6 @@
+CanonicalizeHostname no
+
+Match canonical all
+    User awesome
+
+# vim:set ft=sshconfig :

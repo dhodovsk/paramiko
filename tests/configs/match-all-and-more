@@ -1,0 +1,4 @@
+Match all exec "lol nope"
+    HostName whatever
+
+# vim:set ft=sshconfig :

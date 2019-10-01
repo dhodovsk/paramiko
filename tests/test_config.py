@@ -629,3 +629,25 @@ class TestCanonicalizationOfCNAMEs(object):
     def test_permitted_cnames_may_be_multiple_complex_mappings(self):
         # Same as prev but with multiple patterns on both ends in both args
         pass
+
+
+class TestMatchAll(object):
+    def test_always_matches(self):
+        result = load_config("match-all").lookup("general")
+        assert result["user"] == "awesome"
+
+    def test_may_not_mix_with_non_canonical_keywords(self):
+        with raises(ConfigParseError):
+            load_config("match-all-and-more")
+
+    def test_may_come_after_canonical(self):
+        result = load_config("match-all-after-canonical").lookup("anything")
+        assert result["user"] == "awesome"
+
+    def test_may_not_come_before_canonical(self):
+        with raises(ConfigParseError):
+            load_config("match-all-before-canonical")
+
+    def test_after_canonical_not_loaded_when_non_canonicalized(self):
+        result = load_config("match-canonical-no").lookup("a-host")
+        assert "user" not in result
