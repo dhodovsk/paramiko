@@ -105,7 +105,9 @@ class SSHConfig(object):
 
         :param file_obj: a file-like object to read the config file from
         """
-        host = {"host": ["*"], "config": {}}
+        # Start out w/ implicit/anonymous global host-like block to hold
+        # anything not contained by an explicit one.
+        context = {"host": ["*"], "config": {}}
         for line in file_obj:
             # Strip any leading or trailing whitespace from the line.
             # Refer to https://github.com/paramiko/paramiko/issues/499
@@ -123,14 +125,14 @@ class SSHConfig(object):
 
             # Host keyword triggers switch to new block/context
             if key == "host":
-                self._config.append(host)
-                host = {"host": self._get_hosts(value), "config": {}}
+                self._config.append(context)
+                context = {"host": self._get_hosts(value), "config": {}}
             # Special-case for noop ProxyCommands
             elif key == "proxycommand" and value.lower() == "none":
                 # Store 'none' as None; prior to 3.x, it will get stripped out
                 # at the end (for compatibility with issue #415). After 3.x, it
                 # will simply not get stripped, leaving a nice explicit marker.
-                host["config"][key] = None
+                context["config"][key] = None
             # All other keywords get stored, directly or via append
             else:
                 if value.startswith('"') and value.endswith('"'):
@@ -140,14 +142,14 @@ class SSHConfig(object):
                 # cases, since they are allowed to be specified multiple times
                 # and they should be tried in order of specification.
                 if key in ["identityfile", "localforward", "remoteforward"]:
-                    if key in host["config"]:
-                        host["config"][key].append(value)
+                    if key in context["config"]:
+                        context["config"][key].append(value)
                     else:
-                        host["config"][key] = [value]
-                elif key not in host["config"]:
-                    host["config"][key] = value
+                        context["config"][key] = [value]
+                elif key not in context["config"]:
+                    context["config"][key] = value
         # Store last 'open' block and we're done
-        self._config.append(host)
+        self._config.append(context)
 
     def lookup(self, hostname):
         """
