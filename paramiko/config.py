@@ -125,9 +125,18 @@ class SSHConfig(object):
             value = match.group(2)
 
             # Host keyword triggers switch to new block/context
-            if key == "host":
+            if key in ("host", "match"):
                 self._config.append(context)
-                context = {"host": self._get_hosts(value), "config": {}}
+                context = {"config": {}}
+                if key == "host":
+                    # TODO 3.0: make these real objects or at least name this
+                    # "hosts" to acknowledge it's an iterable. (Doing so prior
+                    # to 3.0, despite it being a private API, feels bad -
+                    # surely such an old codebase has folks actually relying on
+                    # these keys.)
+                    context["host"] = self._get_hosts(value)
+                else:
+                    context["matches"] = self._get_matches(value)
             # Special-case for noop ProxyCommands
             elif key == "proxycommand" and value.lower() == "none":
                 # Store 'none' as None; prior to 3.x, it will get stripped out
@@ -201,16 +210,17 @@ class SSHConfig(object):
         return options
 
     def _lookup(self, hostname, options=None):
-        matches = [
-            config
-            for config in self._config
-            if self._allowed(config["host"], hostname)
-        ]
-
+        # Init
         if options is None:
             options = SSHConfigDict()
-        for match in matches:
-            for key, value in match["config"].items():
+        # Find all matching stanzas
+        for context in self._config:
+            if not (
+                self._allowed(context.get("host", []), hostname)
+                or self._matches(context.get("matches", []), hostname)
+            ):
+                continue
+            for key, value in context["config"].items():
                 if key not in options:
                     # Create a copy of the original value,
                     # else it will reference the original list
@@ -221,6 +231,8 @@ class SSHConfig(object):
                     options[key].extend(
                         x for x in value if x not in options[key]
                     )
+        # Expand variables in result
+        # TODO: this may need weaving into the above, at least to honor Match?
         options = self._expand_variables(options, hostname)
         # TODO: remove in 3.x re #670
         if "proxycommand" in options and options["proxycommand"] is None:
@@ -286,6 +298,9 @@ class SSHConfig(object):
             elif fnmatch.fnmatch(hostname, host):
                 match = True
         return match
+
+    def _matches(self, match_list, target_hostname):
+        pass
 
     def _expand_variables(self, config, hostname):
         """
@@ -368,6 +383,32 @@ class SSHConfig(object):
             return shlex.split(host)
         except ValueError:
             raise ConfigParseError("Unparsable host {}".format(host))
+
+    def _get_matches(self, match):
+        """
+        Return a list of dict representations of Match keywords & their values.
+        """
+        matches = []
+        tokens = shlex.split(match)
+        while tokens:
+            match = {"type": None, "param": None, "negate": False}
+            type_ = tokens.pop(0)
+            if type_.startswith("!"):
+                match["negate"] = True
+                type_ = type_[1:]
+            match["type"] = type_
+            # all/canonical have no params (everything else does)
+            if type_ in ("all", "canonical"):
+                matches.append(match)
+                continue
+            if not tokens:
+                raise ConfigParseError(
+                    "Missing parameter to Match '{}' keyword".format(type_)
+                )
+            # TODO: continue parsing if not exec and comma separated?
+            match["param"] = tokens.pop(0)
+            matches.append(match)
+        return matches
 
 
 def _addressfamily_host_lookup(hostname, options):
