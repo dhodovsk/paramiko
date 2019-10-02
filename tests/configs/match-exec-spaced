@@ -1,0 +1,8 @@
+# Sentinel forcing 'Match not working at all' to fail
+Host specific
+    HostName whatevs
+
+Match exec "quoted spaced"
+    User spaced
+
+# vim:set ft=sshconfig :

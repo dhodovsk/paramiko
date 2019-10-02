@@ -651,3 +651,163 @@ class TestMatchAll(object):
     def test_after_canonical_not_loaded_when_non_canonicalized(self):
         result = load_config("match-canonical-no").lookup("a-host")
         assert "user" not in result
+
+
+class TestMatchExec(object):
+    def test_accepts_single_unquoted_unspaced_argument(self):
+        # TODO: patch exec innards to expect/truthy 'unquoted' cmd
+        result = load_config("match-exec-unquoted").lookup("www")
+        assert result["user"] == "unquoted"
+
+    def test_accepts_quoted_unspaced_argument(self):
+        # TODO: patch exec innards to expect/truthy 'quoted' cmd
+        result = load_config("match-exec-quoted").lookup("www")
+        assert result["user"] == "quoted"
+
+    def test_accepts_quoted_spaced_argument(self):
+        # TODO: patch exec innards to expect/truthy 'quoted spaced' cmd
+        result = load_config("match-exec-spaced").lookup("www")
+        assert result["user"] == "spaced"
+
+    def test_does_not_match_nonzero_exit_codes(self):
+        assert False
+
+    def test_tokenizes_argument(self):
+        # TODO: spot check a few common ones like %h, %p, %l?
+        assert False
+
+    def test_works_with_canonical(self):
+        # TODO: before AND after. same file, different key/values, prove both
+        # show up?
+        assert False
+
+    def test_may_be_negated(self):
+        assert False
+
+    def test_requires_an_argument(self):
+        assert False
+
+
+class TestMatchHost(object):
+    def test_matches_target_name_when_no_hostname(self):
+        assert False
+
+    def test_matches_hostname_when_configured(self):
+        assert False
+
+    def test_matches_canonicalized_name(self):
+        # TODO: this /probably/ requires combining with 'canonical'?
+        assert False
+
+    def test_may_be_globbed(self):
+        # TODO: probably just use a partial glob as it is a stronger test
+        assert False
+
+    def test_may_be_comma_separated_list(self):
+        assert False
+
+    def test_comma_separated_list_may_have_internal_negation(self):
+        assert False
+
+    def test_works_with_canonical(self):
+        # TODO: before AND after. same file, different key/values, prove both
+        # show up?
+        assert False
+
+    def test_may_be_negated(self):
+        assert False
+
+    def test_requires_an_argument(self):
+        assert False
+
+
+class TestMatchOriginalHost(object):
+    def test_matches_target_host_not_hostname(self):
+        assert False
+
+    def test_matches_target_host_not_canonicalized_name(self):
+        assert False
+
+    def test_may_be_globbed(self):
+        # TODO: probably just use a partial glob as it is a stronger test
+        assert False
+
+    def test_may_be_comma_separated_list(self):
+        assert False
+
+    def test_comma_separated_list_may_have_internal_negation(self):
+        assert False
+
+    def test_may_be_negated(self):
+        assert False
+
+    def test_requires_an_argument(self):
+        assert False
+
+
+class TestMatchUser(object):
+    def test_matches_target_username(self):
+        assert False
+
+    def test_may_be_globbed(self):
+        # TODO: probably just use a partial glob as it is a stronger test
+        assert False
+
+    def test_may_be_comma_separated_list(self):
+        assert False
+
+    def test_comma_separated_list_may_have_internal_negation(self):
+        assert False
+
+    def test_may_be_negated(self):
+        assert False
+
+    def test_requires_an_argument(self):
+        assert False
+
+
+class TestMatchLocalUser(object):
+    def test_matches_local_username(self):
+        # TODO: may require refactoring wherever we grab this now
+        assert False
+
+    def test_may_be_globbed(self):
+        # TODO: probably just use a partial glob as it is a stronger test
+        assert False
+
+    def test_may_be_comma_separated_list(self):
+        assert False
+
+    def test_comma_separated_list_may_have_internal_negation(self):
+        assert False
+
+    def test_may_be_negated(self):
+        assert False
+
+    def test_requires_an_argument(self):
+        assert False
+
+
+class TestComplexMatching(object):
+    # NOTE: this is still a cherry-pick of a few levels of complexity, there's
+    # no point testing literally all possible combinations.
+
+    def test_canonical_exec(self):
+        assert False
+
+    def test_originalhost_host(self):
+        assert False
+
+    def test_originalhost_localuser(self):
+        assert False
+
+    def test_everything_but_all(self):
+        assert False
+
+    def test_everything_but_all_with_some_negated(self):
+        assert False
+
+    def test_combining_blanket_and_internal_negation(self):
+        # TODO: e.g. Match !host foo,!bar && host=="bar"
+        # TODO: does that match?! test w/ OpenSSH
+        assert False
