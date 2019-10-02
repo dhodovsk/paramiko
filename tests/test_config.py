@@ -637,8 +637,9 @@ class TestMatchAll(object):
         assert result["user"] == "awesome"
 
     def test_may_not_mix_with_non_canonical_keywords(self):
-        with raises(ConfigParseError):
-            load_config("match-all-and-more")
+        for config in ("match-all-and-more", "match-all-and-more-before"):
+            with raises(ConfigParseError):
+                load_config(config).lookup("whatever")
 
     def test_may_come_after_canonical(self):
         result = load_config("match-all-after-canonical").lookup("anything")

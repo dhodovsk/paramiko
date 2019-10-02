@@ -206,10 +206,10 @@ class SSHConfig(object):
             domains = options["canonicaldomains"].split()
             hostname = self.canonicalize(hostname, options, domains)
             options["hostname"] = hostname
-            options = self._lookup(hostname, options)
+            options = self._lookup(hostname, options, canonical=True)
         return options
 
-    def _lookup(self, hostname, options=None):
+    def _lookup(self, hostname, options=None, canonical=False):
         # Init
         if options is None:
             options = SSHConfigDict()
@@ -217,7 +217,7 @@ class SSHConfig(object):
         for context in self._config:
             if not (
                 self._allowed(context.get("host", []), hostname)
-                or self._matches(context.get("matches", []), hostname)
+                or self._does_match(context.get("matches", []), hostname, canonical)
             ):
                 continue
             for key, value in context["config"].items():
@@ -299,8 +299,23 @@ class SSHConfig(object):
                 match = True
         return match
 
-    def _matches(self, match_list, target_hostname):
-        pass
+    def _does_match(self, match_list, target_hostname, canonical):
+        matched = []
+        matches = match_list[:]
+        while matches:
+            match = matches.pop(0)
+            type_ = match["type"]
+            # Canonical is a hard pass/fail based on whether this is a
+            # canonicalized re-lookup.
+            if type_ == "canonical" and not canonical:
+                return False
+            # The parse step ensures we only see this by itself or after
+            # canonical, so it's also an easy hard pass
+            if type_ == "all":
+                return True
+            matched.append(match)
+        # Fell off the end and nothing caused a short-circuit? It's no good.
+        return False
 
     def _expand_variables(self, config, hostname):
         """
@@ -386,13 +401,16 @@ class SSHConfig(object):
 
     def _get_matches(self, match):
         """
-        Return a list of dict representations of Match keywords & their values.
+        Parse a specific Match config line into a list-of-dicts for its values.
+
+        Performs some parse-time validation as well.
         """
         matches = []
         tokens = shlex.split(match)
         while tokens:
             match = {"type": None, "param": None, "negate": False}
             type_ = tokens.pop(0)
+            # Handle per-keyword negation
             if type_.startswith("!"):
                 match["negate"] = True
                 type_ = type_[1:]
@@ -408,6 +426,22 @@ class SSHConfig(object):
             # TODO: continue parsing if not exec and comma separated?
             match["param"] = tokens.pop(0)
             matches.append(match)
+        # Perform some (easier to do now than in the middle) validation that is
+        # better handled here than at lookup time.
+        keywords = [x["type"] for x in matches]
+        if "all" in keywords:
+            allowable = ("all", "canonical")
+            ok, bad = (
+                list(filter(lambda x: x in allowable, keywords)),
+                list(filter(lambda x: x not in allowable, keywords)),
+            )
+            err = None
+            if any(bad):
+                err = "Match does not allow 'all' mixed with anything but 'canonical'"  # noqa
+            elif "canonical" in ok and ok.index("canonical") > ok.index("all"):
+                err = "Match does not allow 'all' before 'canonical'"
+            if err is not None:
+                raise ConfigParseError(err)
         return matches
 
 
