@@ -329,6 +329,14 @@ class SSHConfig(object):
                 )
                 if self._should_fail(passed, candidate):
                     return False
+            if type_ == "originalhost":
+                passed = self._allowed(param.split(","), target_hostname)
+                if self._should_fail(passed, candidate):
+                    return False
+            if type_ == "user":
+                return False
+            if type_ == "localuser":
+                return False
             # Made it all the way here? Everything matched!
             matched.append(candidate)
         # Did anything match? (To be treated as bool, usually.)

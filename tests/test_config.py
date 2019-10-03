@@ -743,26 +743,35 @@ class TestMatchHost(object):
 
 class TestMatchOriginalHost(object):
     def test_matches_target_host_not_hostname(self):
-        assert False
+        result = load_config("match-orighost").lookup("target")
+        assert result["hostname"] == "bogus"
+        assert result["user"] == "tuon"
 
     def test_matches_target_host_not_canonicalized_name(self, socket):
-        assert False
+        result = load_config("match-orighost-canonical").lookup("www")
+        assert result["hostname"] == "www.paramiko.org"
+        assert result["user"] == "tuon"
 
     def test_may_be_globbed(self):
-        # TODO: probably just use a partial glob as it is a stronger test
-        assert False
+        result = load_config("match-orighost").lookup("whatever")
+        assert result["user"] == "matrim"
 
     def test_may_be_comma_separated_list(self):
-        assert False
+        for target in ("comma", "separated"):
+            result = load_config("match-orighost").lookup(target)
+            assert result["user"] == "chameleon"
 
     def test_comma_separated_list_may_have_internal_negation(self):
-        assert False
+        result = load_config("match-orighost").lookup("nope")
+        assert "user" not in result
 
     def test_may_be_negated(self):
-        assert False
+        result = load_config("match-orighost").lookup("docs")
+        assert result["user"] == "thom"
 
     def test_requires_an_argument(self):
-        assert False
+        with raises(ConfigParseError):
+            load_config("match-orighost-no-arg")
 
 
 class TestMatchUser(object):
