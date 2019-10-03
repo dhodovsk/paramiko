@@ -213,11 +213,14 @@ class SSHConfig(object):
         # Init
         if options is None:
             options = SSHConfigDict()
-        # Find all matching stanzas
+        # Iterate all stanzas, applying any that match, in turn (so that things
+        # like Match can reference currently understood state)
         for context in self._config:
             if not (
                 self._allowed(context.get("host", []), hostname)
-                or self._does_match(context.get("matches", []), hostname, canonical)
+                or self._does_match(
+                    context.get("matches", []), hostname, canonical, options,
+                )
             ):
                 continue
             for key, value in context["config"].items():
@@ -299,12 +302,15 @@ class SSHConfig(object):
                 match = True
         return match
 
-    def _does_match(self, match_list, target_hostname, canonical):
+    def _does_match(self, match_list, target_hostname, canonical, options):
         matched = []
-        matches = match_list[:]
-        while matches:
-            match = matches.pop(0)
-            type_ = match["type"]
+        candidates = match_list[:]
+        while candidates:
+            # Obtain substituted host every loop, so later Match may reference
+            # values assigned within a prior Match.
+            substituted_host = options.get("hostname", None)
+            candidate = candidates.pop(0)
+            type_, param = candidate["type"], candidate["param"]
             # Canonical is a hard pass/fail based on whether this is a
             # canonicalized re-lookup.
             if type_ == "canonical" and not canonical:
@@ -313,9 +319,18 @@ class SSHConfig(object):
             # canonical, so it's also an easy hard pass
             if type_ == "all":
                 return True
-            matched.append(match)
-        # Fell off the end and nothing caused a short-circuit? It's no good.
-        return False
+            # From here, we are testing various non-hard criteria,
+            # short-circuiting only on fail
+            if type_ == "host":
+                if substituted_host:
+                    if param != substituted_host:
+                        return False
+                elif param != target_hostname:
+                    return False
+            # Made it all the way here? Everything matched!
+            matched.append(candidate)
+        # Did anything match? (To be treated as bool, usually.)
+        return matched
 
     def _expand_variables(self, config, hostname):
         """

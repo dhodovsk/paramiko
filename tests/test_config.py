@@ -691,10 +691,19 @@ class TestMatchExec(object):
 
 class TestMatchHost(object):
     def test_matches_target_name_when_no_hostname(self):
-        assert False
+        result = load_config("match-host").lookup("target")
+        assert result["user"] == "rand"
 
-    def test_matches_hostname_when_configured(self):
-        assert False
+    def test_matches_hostname_from_global_setting(self):
+        # Also works for ones set in regular Host stanzas
+        result = load_config("match-host-name").lookup("anything")
+        assert result["user"] == "silly"
+
+    def test_matches_hostname_from_earlier_match(self):
+        # Corner case: one Match matches original host, sets HostName,
+        # subsequent Match matches the latter.
+        result = load_config("match-host-from-match").lookup("original-host")
+        assert result["user"] == "inner"
 
     def test_matches_canonicalized_name(self):
         # TODO: this /probably/ requires combining with 'canonical'?
