@@ -322,10 +322,11 @@ class SSHConfig(object):
             # From here, we are testing various non-hard criteria,
             # short-circuiting only on fail
             if type_ == "host":
+                param_hosts = param.split(",")
                 if substituted_host:
-                    if param != substituted_host:
+                    if not self._allowed(param_hosts, substituted_host):
                         return False
-                elif param != target_hostname:
+                elif not self._allowed(param_hosts, target_hostname):
                     return False
             # Made it all the way here? Everything matched!
             matched.append(candidate)

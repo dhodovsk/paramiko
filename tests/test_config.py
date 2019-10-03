@@ -706,14 +706,18 @@ class TestMatchHost(object):
         assert result["user"] == "inner"
 
     def test_may_be_globbed(self):
-        # TODO: probably just use a partial glob as it is a stronger test
-        assert False
+        result = load_config("match-host-glob-list").lookup("whatever")
+        assert result["user"] == "matrim"
 
     def test_may_be_comma_separated_list(self):
-        assert False
+        for target in ("somehost", "someotherhost"):
+            result = load_config("match-host-glob-list").lookup(target)
+            assert result["user"] == "thom"
 
     def test_comma_separated_list_may_have_internal_negation(self):
-        assert False
+        conf = load_config("match-host-glob-list")
+        assert conf.lookup("good")["user"] == "perrin"
+        assert "user" not in conf.lookup("goof")
 
     def test_matches_canonicalized_name(self, socket):
         # Without 'canonical' explicitly declared, mind.

@@ -1,5 +1,5 @@
-Match host www.paramiko.org
-    User rand
+Match host *ever
+    User matrim
 
 
 # vim:set ft=sshconfig :
