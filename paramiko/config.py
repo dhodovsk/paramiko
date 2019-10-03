@@ -22,6 +22,7 @@ Configuration file (aka ``ssh_config``) support.
 """
 
 import fnmatch
+import getpass
 import os
 import re
 import shlex
@@ -308,7 +309,7 @@ class SSHConfig(object):
         else:
             port = SSH_PORT
 
-        user = os.getenv("USER")
+        user = getpass.getuser()
         if "user" in config:
             remoteuser = config["user"]
         else:

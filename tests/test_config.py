@@ -189,6 +189,22 @@ Host test
         got = config.lookup("test")["proxycommand"]
         assert got == expected
 
+    @patch("paramiko.config.getpass")
+    def test_controlpath_token_expansion(self, getpass):
+        getpass.getuser.return_value = "gandalf"
+        config = SSHConfig.from_text("""
+Host explicit
+    User root
+    ControlPath user %u remoteuser %r
+
+Host fallback
+    ControlPath user %u remoteuser %r
+        """)
+        result = config.lookup("explicit")["controlpath"]
+        assert result == "user gandalf remoteuser root"
+        result = config.lookup("fallback")["controlpath"]
+        assert result == "user gandalf remoteuser gandalf"
+
     def test_host_config_test_negation(self):
         config = SSHConfig.from_text(
             """

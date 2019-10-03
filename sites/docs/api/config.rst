@@ -98,7 +98,8 @@ OpenSSH, ``%L`` works in ``ControlPath`` but not elsewhere):
 - ``%n``
 - ``%p``
 - ``%r``
-- ``%u``
+- ``%u``: substitutes the configured ``User`` value, or the local user (as seen
+  by ``getpass.getuser``) if not specified.
 
 In addition, we extend OpenSSH's tokens as follows:
 

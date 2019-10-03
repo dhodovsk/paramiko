@@ -2,6 +2,12 @@
 Changelog
 =========
 
+- :bug:`- major` ``ssh_config`` :ref:`token expansion <TOKENS>` used a
+  different method of determining the local username (``$USER`` env var),
+  compared to what the (much older) client connection code does
+  (``getpass.getuser``, which includes ``$USER`` but may check other variables
+  first, and is generally much more comprehensive). Both modules now use
+  ``getpass.getuser``.
 - :feature:`-` A couple of outright `~paramiko.config.SSHConfig` parse errors
   were previously represented as vanilla ``Exception`` instances; as part of
   recent feature work a more specific exception class,
