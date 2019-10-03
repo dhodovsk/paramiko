@@ -13,7 +13,6 @@ from paramiko import (
     CouldNotCanonicalize,
     ConfigParseError,
 )
-from paramiko.util import lookup_ssh_host_config
 
 from .util import _config
 
@@ -113,7 +112,7 @@ class TestSSHConfig(object):
                 hostname=host,
                 identityfile=[expanduser("~/.ssh/id_rsa")],
             )
-            assert lookup_ssh_host_config(host, self.config) == values
+            assert self.config.lookup(host) == values
 
     def test_host_config_expose_fabric_issue_33(self):
         config = SSHConfig.from_text(
@@ -130,7 +129,7 @@ Host *
         )
         host = "www13.example.com"
         expected = {"hostname": host, "port": "22"}
-        assert lookup_ssh_host_config(host, config) == expected
+        assert config.lookup(host) == expected
 
     def test_proxycommand_config_equals_parsing(self):
         """
@@ -146,7 +145,7 @@ Host equals-delimited
 """
         )
         for host in ("space-delimited", "equals-delimited"):
-            value = lookup_ssh_host_config(host, config)["proxycommand"]
+            value = config.lookup(host)["proxycommand"]
             assert value == "foo bar=biz baz"
 
     def test_proxycommand_interpolation(self):
@@ -172,7 +171,7 @@ Host *
             ("specific", "host specific port 37 lol"),
             ("portonly", "host portonly port 155"),
         ):
-            assert lookup_ssh_host_config(host, config)["proxycommand"] == val
+            assert config.lookup(host)["proxycommand"] == val
 
     def test_proxycommand_tilde_expansion(self):
         """
@@ -187,7 +186,7 @@ Host test
         expected = "ssh -F {}/.ssh/test_config bastion nc test 22".format(
             expanduser("~")
         )
-        got = lookup_ssh_host_config("test", config)["proxycommand"]
+        got = config.lookup("test")["proxycommand"]
         assert got == expected
 
     def test_host_config_test_negation(self):
@@ -208,7 +207,7 @@ Host *
         )
         host = "www13.example.com"
         expected = {"hostname": host, "port": "8080"}
-        assert lookup_ssh_host_config(host, config) == expected
+        assert config.lookup(host) == expected
 
     def test_host_config_test_proxycommand(self):
         config = SSHConfig.from_text(
@@ -238,7 +237,7 @@ ProxyCommand foo=bar:%h-%p
             },
         }.items():
 
-            assert lookup_ssh_host_config(host, config) == values
+            assert config.lookup(host) == values
 
     def test_host_config_test_identityfile(self):
         config = SSHConfig.from_text(
@@ -268,7 +267,7 @@ IdentityFile id_dsa22
             },
         }.items():
 
-            assert lookup_ssh_host_config(host, config) == values
+            assert config.lookup(host) == values
 
     def test_config_addressfamily_and_lazy_fqdn(self):
         """
@@ -326,7 +325,7 @@ Host param4 "p a r" "p" "par" para
             "para": {"hostname": "para", "port": "4444"},
         }
         for host, values in res.items():
-            assert lookup_ssh_host_config(host, config) == values
+            assert config.lookup(host) == values
 
     def test_quoted_params_in_config(self):
         config = SSHConfig.from_text(
@@ -357,7 +356,7 @@ Host param3 parara
             },
         }
         for host, values in res.items():
-            assert lookup_ssh_host_config(host, config) == values
+            assert config.lookup(host) == values
 
     def test_quoted_host_in_config(self):
         conf = SSHConfig()
@@ -404,7 +403,7 @@ Host proxycommand-with-equals-none
             },
         }.items():
 
-            assert lookup_ssh_host_config(host, config) == values
+            assert config.lookup(host) == values
 
     def test_proxycommand_none_masking(self):
         # Re: https://github.com/paramiko/paramiko/issues/670
