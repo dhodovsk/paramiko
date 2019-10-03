@@ -18,6 +18,28 @@ from paramiko.util import lookup_ssh_host_config
 from .util import _config
 
 
+@fixture
+def socket():
+    """
+    Patch all of socket.* in our config module to prevent eg real DNS lookups.
+
+    Also forces getaddrinfo (used in our addressfamily lookup stuff) to always
+    fail by default to mimic usual lack of AddressFamily related crap.
+
+    Callers who want to mock DNS lookups can then safely assume gethostbyname()
+    will be in use.
+    """
+    with patch("paramiko.config.socket") as mocket:
+        # Reinstate gaierror as an actual exception and not a sub-mock.
+        # (Presumably this would work with any exception, but why not use the
+        # real one?)
+        mocket.gaierror = gaierror
+        # Patch out getaddrinfo, used to detect family-specific IP lookup -
+        # only useful for a few specific tests.
+        mocket.getaddrinfo.side_effect = mocket.gaierror
+        yield mocket
+
+
 def load_config(name):
     return SSHConfig.from_path(_config(name))
 
@@ -467,19 +489,6 @@ Host *
 """
         )
         assert config.lookup("anything-else").as_int("port") == 3333
-
-
-@fixture
-def socket():
-    with patch("paramiko.config.socket") as mocket:
-        # Reinstate gaierror as an actual exception and not a sub-mock.
-        # (Presumably this would work with any exception, but why not use the
-        # real one?)
-        mocket.gaierror = gaierror
-        # Patch out getaddrinfo, used to detect family-specific IP lookup -
-        # only useful for a few specific tests.
-        mocket.getaddrinfo.side_effect = mocket.gaierror
-        yield mocket
 
 
 class TestHostnameCanonicalization(object):
