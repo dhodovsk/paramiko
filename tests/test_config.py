@@ -737,7 +737,8 @@ class TestMatchHost(object):
         assert "user" not in conf.lookup("www")
 
     def test_requires_an_argument(self):
-        assert False
+        with raises(ConfigParseError):
+            load_config("match-host-no-arg")
 
 
 class TestMatchOriginalHost(object):

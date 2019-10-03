@@ -1,0 +1,4 @@
+Match host
+    User oops
+
+# vim:set ft=sshconfig :
