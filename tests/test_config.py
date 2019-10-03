@@ -732,7 +732,9 @@ class TestMatchHost(object):
         assert result["user"] == "eric"
 
     def test_may_be_negated(self):
-        assert False
+        conf = load_config("match-host-negated")
+        assert conf.lookup("docs")["user"] == "jeff"
+        assert "user" not in conf.lookup("www")
 
     def test_requires_an_argument(self):
         assert False
@@ -828,3 +830,11 @@ class TestComplexMatching(object):
         # TODO: e.g. Match !host foo,!bar && host=="bar"
         # TODO: does that match?! test w/ OpenSSH
         assert False
+
+    def test_negated_canonical(self, socket):
+        # !canonical in a config that is not canonicalized - does match
+        result = load_config("match-canonical-no").lookup("specific")
+        assert result["user"] == "overload"
+        # !canonical in a config that is canonicalized - does NOT match
+        result = load_config("match-canonical-yes").lookup("www")
+        assert result["user"] == "hidden"

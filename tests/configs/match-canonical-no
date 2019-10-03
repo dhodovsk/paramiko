@@ -3,4 +3,7 @@ CanonicalizeHostname no
 Match canonical all
     User awesome
 
+Match !canonical host specific
+    User overload
+
 # vim:set ft=sshconfig :

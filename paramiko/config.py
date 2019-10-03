@@ -306,32 +306,45 @@ class SSHConfig(object):
         matched = []
         candidates = match_list[:]
         while candidates:
+            candidate = candidates.pop(0)
             # Obtain substituted host every loop, so later Match may reference
             # values assigned within a prior Match.
             substituted_host = options.get("hostname", None)
-            candidate = candidates.pop(0)
             type_, param = candidate["type"], candidate["param"]
             # Canonical is a hard pass/fail based on whether this is a
             # canonicalized re-lookup.
-            if type_ == "canonical" and not canonical:
-                return False
+            if type == "canonical":
+                if self._should_fail(not canonical, candidate):
+                    return False
             # The parse step ensures we only see this by itself or after
-            # canonical, so it's also an easy hard pass
+            # canonical, so it's also an easy hard pass. (No negation here as
+            # that would be uh, pretty weird?)
             if type_ == "all":
                 return True
             # From here, we are testing various non-hard criteria,
             # short-circuiting only on fail
             if type_ == "host":
-                param_hosts = param.split(",")
-                if substituted_host:
-                    if not self._allowed(param_hosts, substituted_host):
-                        return False
-                elif not self._allowed(param_hosts, target_hostname):
+                passed = self._matches_host(
+                    param, substituted_host, target_hostname,
+                )
+                if self._should_fail(passed, candidate):
                     return False
             # Made it all the way here? Everything matched!
             matched.append(candidate)
         # Did anything match? (To be treated as bool, usually.)
         return matched
+
+    def _should_fail(self, would_pass, candidate):
+        return would_pass if candidate["negate"] else not would_pass
+
+    def _matches_host(self, param, substituted_host, target_hostname):
+        param_hosts = param.split(",")
+        if substituted_host:
+            if not self._allowed(param_hosts, substituted_host):
+                return False
+        elif not self._allowed(param_hosts, target_hostname):
+            return False
+        return True
 
     def _expand_variables(self, config, hostname):
         """
