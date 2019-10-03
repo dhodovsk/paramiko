@@ -775,24 +775,48 @@ class TestMatchOriginalHost(object):
 
 
 class TestMatchUser(object):
-    def test_matches_target_username(self):
-        assert False
+    def test_matches_configured_username(self):
+        result = load_config("match-user-explicit").lookup("anything")
+        assert result["hostname"] == "dumb"
 
-    def test_may_be_globbed(self):
-        # TODO: probably just use a partial glob as it is a stronger test
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_matches_local_username_by_default(self, getuser):
+        getuser.return_value = "gandalf"
+        result = load_config("match-user").lookup("anything")
+        assert result["hostname"] == "gondor"
 
-    def test_may_be_comma_separated_list(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_globbed(self, getuser):
+        for user in ("bilbo", "bombadil"):
+            getuser.return_value = user
+            result = load_config("match-user").lookup("anything")
+            assert result["hostname"] == "shire"
 
-    def test_comma_separated_list_may_have_internal_negation(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_comma_separated_list(self, getuser):
+        for user in ("aragorn", "frodo"):
+            getuser.return_value = user
+            result = load_config("match-user").lookup("anything")
+            assert result["hostname"] == "moria"
 
-    def test_may_be_negated(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_comma_separated_list_may_have_internal_negation(self, getuser):
+        getuser.return_value = "legolas"
+        result = load_config("match-user").lookup("anything")
+        assert "port" not in result
+        getuser.return_value = "gimli"
+        result = load_config("match-user").lookup("anything")
+        assert result["port"] == 7373
+
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_negated(self, getuser):
+        getuser.return_value = "saruman"
+        result = load_config("match-user").lookup("anything")
+        assert result["hostname"] == "mordor"
 
     def test_requires_an_argument(self):
-        assert False
+        with raises(ConfigParseError):
+            load_config("match-user-no-arg")
 
 
 class TestMatchLocalUser(object):

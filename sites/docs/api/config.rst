@@ -61,7 +61,11 @@ Paramiko releases) are included. A keyword by itself means no known departures.
 
 - ``Host``
 - ``HostName``: used in ``%h`` :ref:`token expansion <TOKENS>`
-- ``Match``
+- ``Match``: fully supported, with the usual caveat that connection-time
+  information is not present during config lookup, and thus cannot be used to
+  determine matching. This primarily impacts ``Match user``, which can match
+  against loaded ``User`` values but has no knowledge about connection-time
+  usernames.
 
     .. versionadded:: 2.7
 

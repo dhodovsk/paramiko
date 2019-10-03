@@ -305,11 +305,13 @@ class SSHConfig(object):
     def _does_match(self, match_list, target_hostname, canonical, options):
         matched = []
         candidates = match_list[:]
+        local_username = getpass.getuser()
         while candidates:
             candidate = candidates.pop(0)
-            # Obtain substituted host every loop, so later Match may reference
-            # values assigned within a prior Match.
+            # Obtain substituted host/user every loop, so later Match may
+            # reference values assigned within a prior Match.
             substituted_host = options.get("hostname", None)
+            configured_user = options.get("user", None)
             type_, param = candidate["type"], candidate["param"]
             # Canonical is a hard pass/fail based on whether this is a
             # canonicalized re-lookup.
@@ -334,7 +336,9 @@ class SSHConfig(object):
                 if self._should_fail(passed, candidate):
                     return False
             if type_ == "user":
-                return False
+                user = configured_user or local_username
+                if not fnmatch.fnmatch(user, param):
+                    return False
             if type_ == "localuser":
                 return False
             # Made it all the way here? Everything matched!
