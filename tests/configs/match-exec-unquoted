@@ -1,7 +1,3 @@
-# Sentinel forcing 'Match not working at all' to fail
-Host specific
-    HostName whatevs
-
 Match exec unquoted
     User unquoted
 

@@ -1,10 +1,6 @@
 CanonicalizeHostname yes
 CanonicalDomains paramiko.org
 
-# Sentinel forcing 'Match not working at all' to fail
-Host specific
-    HostName whatevs
-
 Match canonical all
     User awesome
 

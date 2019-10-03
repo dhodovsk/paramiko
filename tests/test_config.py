@@ -641,15 +641,15 @@ class TestMatchAll(object):
             with raises(ConfigParseError):
                 load_config(config).lookup("whatever")
 
-    def test_may_come_after_canonical(self):
-        result = load_config("match-all-after-canonical").lookup("anything")
+    def test_may_come_after_canonical(self, socket):
+        result = load_config("match-all-after-canonical").lookup("www")
         assert result["user"] == "awesome"
 
-    def test_may_not_come_before_canonical(self):
+    def test_may_not_come_before_canonical(self, socket):
         with raises(ConfigParseError):
             load_config("match-all-before-canonical")
 
-    def test_after_canonical_not_loaded_when_non_canonicalized(self):
+    def test_after_canonical_not_loaded_when_non_canonicalized(self, socket):
         result = load_config("match-canonical-no").lookup("a-host")
         assert "user" not in result
 
@@ -677,7 +677,7 @@ class TestMatchExec(object):
         # TODO: spot check a few common ones like %h, %p, %l?
         assert False
 
-    def test_works_with_canonical(self):
+    def test_works_with_canonical(self, socket):
         # TODO: before AND after. same file, different key/values, prove both
         # show up?
         assert False
@@ -705,10 +705,6 @@ class TestMatchHost(object):
         result = load_config("match-host-from-match").lookup("original-host")
         assert result["user"] == "inner"
 
-    def test_matches_canonicalized_name(self):
-        # TODO: this /probably/ requires combining with 'canonical'?
-        assert False
-
     def test_may_be_globbed(self):
         # TODO: probably just use a partial glob as it is a stronger test
         assert False
@@ -719,10 +715,17 @@ class TestMatchHost(object):
     def test_comma_separated_list_may_have_internal_negation(self):
         assert False
 
-    def test_works_with_canonical(self):
+    def test_matches_canonicalized_name(self, socket):
+        # Without 'canonical' explicitly declared, mind.
+        result = load_config("match-host-canonicalized").lookup("www")
+        assert result["user"] == "rand"
+
+    def test_works_with_canonical_keyword(self, socket):
+        # NOTE: distinct from 'happens to be canonicalized' above
         # TODO: before AND after. same file, different key/values, prove both
         # show up?
-        assert False
+        result = load_config("match-host-canonicalized").lookup("docs")
+        assert result["user"] == "eric"
 
     def test_may_be_negated(self):
         assert False
@@ -735,7 +738,7 @@ class TestMatchOriginalHost(object):
     def test_matches_target_host_not_hostname(self):
         assert False
 
-    def test_matches_target_host_not_canonicalized_name(self):
+    def test_matches_target_host_not_canonicalized_name(self, socket):
         assert False
 
     def test_may_be_globbed(self):
@@ -802,7 +805,7 @@ class TestComplexMatching(object):
     # NOTE: this is still a cherry-pick of a few levels of complexity, there's
     # no point testing literally all possible combinations.
 
-    def test_canonical_exec(self):
+    def test_canonical_exec(self, socket):
         assert False
 
     def test_originalhost_host(self):
@@ -811,10 +814,10 @@ class TestComplexMatching(object):
     def test_originalhost_localuser(self):
         assert False
 
-    def test_everything_but_all(self):
+    def test_everything_but_all(self, socket):
         assert False
 
-    def test_everything_but_all_with_some_negated(self):
+    def test_everything_but_all_with_some_negated(self, socket):
         assert False
 
     def test_combining_blanket_and_internal_negation(self):
