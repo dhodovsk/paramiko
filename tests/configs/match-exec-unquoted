@@ -1,4 +1,3 @@
 Match exec unquoted
     User unquoted
 
-# vim:set ft=sshconfig :

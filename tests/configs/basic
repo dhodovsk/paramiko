@@ -3,4 +3,3 @@ CanonicalDomains paramiko.org
 Host www.paramiko.org
     User rando
 
-# vim: set ft=sshconfig :

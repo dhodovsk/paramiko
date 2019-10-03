@@ -2,4 +2,3 @@ Match host *ever
     User matrim
 
 
-# vim:set ft=sshconfig :

@@ -4,4 +4,3 @@ Match host original-host
 Match host substituted-host
     User inner
 
-# vim:set ft=sshconfig :

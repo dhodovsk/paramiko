@@ -1,4 +1,3 @@
 Match !host www
     User jeff
 
-# vim:set ft=sshconfig :

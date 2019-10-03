@@ -6,4 +6,3 @@ Match canonical all
 Match !canonical host specific
     User overload
 
-# vim:set ft=sshconfig :

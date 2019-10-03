@@ -1,4 +1,3 @@
 Match exec "quoted spaced"
     User spaced
 
-# vim:set ft=sshconfig :
