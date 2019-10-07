@@ -217,9 +217,9 @@ class SSHConfig(object):
         # like Match can reference currently understood state)
         for context in self._config:
             if not (
-                self._allowed(context.get("host", []), hostname)
+                self._pattern_matches(context.get("host", []), hostname)
                 or self._does_match(
-                    context.get("matches", []), hostname, canonical, options,
+                    context.get("matches", []), hostname, canonical, options
                 )
             ):
                 continue
@@ -293,14 +293,26 @@ class SSHConfig(object):
             hosts.update(entry["host"])
         return hosts
 
-    def _allowed(self, hosts, hostname):
+    def _pattern_matches(self, patterns, target):
+        # Convenience auto-splitter if not already a list
+        if hasattr(patterns, "split"):
+            patterns = patterns.split(",")
         match = False
-        for host in hosts:
-            if host.startswith("!") and fnmatch.fnmatch(hostname, host[1:]):
+        for pattern in patterns:
+            # Short-circuit if target matches a negated pattern
+            if pattern.startswith("!") and fnmatch.fnmatch(
+                target, pattern[1:]
+            ):
                 return False
-            elif fnmatch.fnmatch(hostname, host):
+            # Flag a match, but continue (in case of later negation) if regular
+            # match occurs
+            elif fnmatch.fnmatch(target, pattern):
                 match = True
         return match
+
+    # TODO 3.0: remove entirely (is now unused internally)
+    def _allowed(self, hosts, hostname):
+        return self._pattern_matches(hosts, hostname)
 
     def _does_match(self, match_list, target_hostname, canonical, options):
         matched = []
@@ -327,17 +339,18 @@ class SSHConfig(object):
             # short-circuiting only on fail
             if type_ == "host":
                 passed = self._matches_host(
-                    param, substituted_host, target_hostname,
+                    param, substituted_host, target_hostname
                 )
                 if self._should_fail(passed, candidate):
                     return False
             if type_ == "originalhost":
-                passed = self._allowed(param.split(","), target_hostname)
+                passed = self._pattern_matches(param, target_hostname)
                 if self._should_fail(passed, candidate):
                     return False
             if type_ == "user":
                 user = configured_user or local_username
-                if not fnmatch.fnmatch(user, param):
+                passed = self._pattern_matches(param, user)
+                if self._should_fail(passed, candidate):
                     return False
             if type_ == "localuser":
                 return False
@@ -350,11 +363,10 @@ class SSHConfig(object):
         return would_pass if candidate["negate"] else not would_pass
 
     def _matches_host(self, param, substituted_host, target_hostname):
-        param_hosts = param.split(",")
         if substituted_host:
-            if not self._allowed(param_hosts, substituted_host):
+            if not self._pattern_matches(param, substituted_host):
                 return False
-        elif not self._allowed(param_hosts, target_hostname):
+        elif not self._pattern_matches(param, target_hostname):
             return False
         return True
 

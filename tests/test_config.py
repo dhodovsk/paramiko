@@ -192,14 +192,16 @@ Host test
     @patch("paramiko.config.getpass")
     def test_controlpath_token_expansion(self, getpass):
         getpass.getuser.return_value = "gandalf"
-        config = SSHConfig.from_text("""
+        config = SSHConfig.from_text(
+            """
 Host explicit
     User root
     ControlPath user %u remoteuser %r
 
 Host fallback
     ControlPath user %u remoteuser %r
-        """)
+        """
+        )
         result = config.lookup("explicit")["controlpath"]
         assert result == "user gandalf remoteuser root"
         result = config.lookup("fallback")["controlpath"]
@@ -806,7 +808,7 @@ class TestMatchUser(object):
         assert "port" not in result
         getuser.return_value = "gimli"
         result = load_config("match-user").lookup("anything")
-        assert result["port"] == 7373
+        assert result["port"] == "7373"
 
     @patch("paramiko.config.getpass.getuser")
     def test_may_be_negated(self, getuser):
