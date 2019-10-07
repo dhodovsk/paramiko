@@ -327,8 +327,8 @@ class SSHConfig(object):
             type_, param = candidate["type"], candidate["param"]
             # Canonical is a hard pass/fail based on whether this is a
             # canonicalized re-lookup.
-            if type == "canonical":
-                if self._should_fail(not canonical, candidate):
+            if type_ == "canonical":
+                if self._should_fail(canonical, candidate):
                     return False
             # The parse step ensures we only see this by itself or after
             # canonical, so it's also an easy hard pass. (No negation here as
