@@ -872,21 +872,27 @@ class TestComplexMatching(object):
         assert False
 
     def test_originalhost_host(self):
-        assert False
+        result = load_config("match-complex").lookup("target")
+        assert result["hostname"] == "bogus"
+        assert result["user"] == "rand"
 
-    def test_originalhost_localuser(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_originalhost_localuser(self, getuser):
+        getuser.return_value = "rando"
+        result = load_config("match-complex").lookup("remote")
+        assert result["user"] == "calrissian"
 
-    def test_everything_but_all(self, socket):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_everything_but_all(self, getuser):
+        getuser.return_value = "rando"
+        result = load_config("match-complex").lookup("www")
+        assert result["port"] == "7777"
 
-    def test_everything_but_all_with_some_negated(self, socket):
-        assert False
-
-    def test_combining_blanket_and_internal_negation(self):
-        # TODO: e.g. Match !host foo,!bar && host=="bar"
-        # TODO: does that match?! test w/ OpenSSH
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_everything_but_all_with_some_negated(self, getuser):
+        getuser.return_value = "rando"
+        result = load_config("match-complex").lookup("docs")
+        assert result["port"] == "1234"
 
     def test_negated_canonical(self, socket):
         # !canonical in a config that is not canonicalized - does match
