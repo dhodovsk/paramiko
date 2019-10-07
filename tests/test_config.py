@@ -821,26 +821,47 @@ class TestMatchUser(object):
             load_config("match-user-no-arg")
 
 
+# NOTE: highly derivative of previous suite due to the former's use of
+# localuser fallback. Doesn't seem worth conflating/refactoring right now.
 class TestMatchLocalUser(object):
-    def test_matches_local_username(self):
-        # TODO: may require refactoring wherever we grab this now
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_matches_local_username(self, getuser):
+        getuser.return_value = "gandalf"
+        result = load_config("match-localuser").lookup("anything")
+        assert result["hostname"] == "gondor"
 
-    def test_may_be_globbed(self):
-        # TODO: probably just use a partial glob as it is a stronger test
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_globbed(self, getuser):
+        for user in ("bilbo", "bombadil"):
+            getuser.return_value = user
+            result = load_config("match-localuser").lookup("anything")
+            assert result["hostname"] == "shire"
 
-    def test_may_be_comma_separated_list(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_comma_separated_list(self, getuser):
+        for user in ("aragorn", "frodo"):
+            getuser.return_value = user
+            result = load_config("match-localuser").lookup("anything")
+            assert result["hostname"] == "moria"
 
-    def test_comma_separated_list_may_have_internal_negation(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_comma_separated_list_may_have_internal_negation(self, getuser):
+        getuser.return_value = "legolas"
+        result = load_config("match-localuser").lookup("anything")
+        assert "port" not in result
+        getuser.return_value = "gimli"
+        result = load_config("match-localuser").lookup("anything")
+        assert result["port"] == "7373"
 
-    def test_may_be_negated(self):
-        assert False
+    @patch("paramiko.config.getpass.getuser")
+    def test_may_be_negated(self, getuser):
+        getuser.return_value = "saruman"
+        result = load_config("match-localuser").lookup("anything")
+        assert result["hostname"] == "mordor"
 
     def test_requires_an_argument(self):
-        assert False
+        with raises(ConfigParseError):
+            load_config("match-localuser-no-arg")
 
 
 class TestComplexMatching(object):
