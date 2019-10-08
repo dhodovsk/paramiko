@@ -30,9 +30,6 @@ Emphasis is on using SSH2 as an alternative to SSL for making secure
 connections between python scripts.  All major ciphers and hash methods
 are supported.  SFTP client and server mode are both supported too.
 
-Required packages:
-    Cryptography
-
 To install the development version, ``pip install -e
 git+https://github.com/paramiko/paramiko/#egg=paramiko``.
 """
@@ -73,7 +70,12 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    install_requires=["bcrypt>=3.1.3", "cryptography>=2.5", "pynacl>=1.0.1"],
+    install_requires=[
+        "bcrypt>=3.1.3",
+        "cryptography>=2.5",
+        "pynacl>=1.0.1",
+        "invoke>=1.3",
+    ],
     extras_require={
         "gssapi": [
             "pyasn1>=0.1.7",

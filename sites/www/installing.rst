@@ -25,7 +25,9 @@ older (or 3.3 or older) are urged to upgrade.
 Paramiko has only a few direct dependencies:
 
 - The big one, with its own sub-dependencies, is Cryptography; see :ref:`its
-  specific note below <cryptography>` for more details.
+  specific note below <cryptography>` for more details;
+- `Invoke <https://www.pyinvoke.org>`_, for ``Match exec`` subprocess support
+  (and eventually ``ProxyCommand``);
 - `bcrypt <https://pypi.org/project/bcrypt/>`_, for Ed25519 key support;
 - `pynacl <https://pypi.org/project/PyNaCl/>`_, also for Ed25519 key support.
 

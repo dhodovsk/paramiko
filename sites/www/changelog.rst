@@ -17,6 +17,14 @@ Changelog
   files. Previously, this keyword was simply ignored & keywords inside such
   blocks were treated as if they were part of the previous block. Thanks to
   Michael Leinartas for the initial patchset.
+
+  .. warning::
+    This feature adds a new :doc:`install dependency <installing>`, `Invoke
+    <https://www.pyinvoke.org>`_, for managing ``Match exec`` subprocesses.
+    It's available on all platforms and has no external dependencies of its
+    own, so we've made it a regular dependency and not an optional one, for
+    simplicity's sake.
+
 - :bug:`- major` Perform deduplication of ``IdentityFile`` contents during
   ``ssh_config`` parsing; previously, if your config would result in the same
   value being encountered more than once, ``IdentityFile`` would contain that
