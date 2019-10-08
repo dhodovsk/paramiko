@@ -30,6 +30,12 @@ import socket
 
 from .py3compat import StringIO
 
+invoke, invoke_import_error = None, None
+try:
+    import invoke
+except ImportError as e:
+    invoke_import_error = e
+
 from .ssh_exception import CouldNotCanonicalize, ConfigParseError
 
 
@@ -353,6 +359,10 @@ class SSHConfig(object):
                     return False
             if type_ == "localuser":
                 passed = self._pattern_matches(param, local_username)
+                if self._should_fail(passed, candidate):
+                    return False
+            if type_ == "exec":
+                passed = False
                 if self._should_fail(passed, candidate):
                     return False
             # Made it all the way here? Everything matched!
