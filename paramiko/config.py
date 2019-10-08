@@ -320,9 +320,9 @@ class SSHConfig(object):
         local_username = getpass.getuser()
         while candidates:
             candidate = candidates.pop(0)
-            # Obtain substituted host/user every loop, so later Match may
+            # Obtain latest host/user value every loop, so later Match may
             # reference values assigned within a prior Match.
-            substituted_host = options.get("hostname", None)
+            configured_host = options.get("hostname", None)
             configured_user = options.get("user", None)
             type_, param = candidate["type"], candidate["param"]
             # Canonical is a hard pass/fail based on whether this is a
@@ -338,9 +338,8 @@ class SSHConfig(object):
             # From here, we are testing various non-hard criteria,
             # short-circuiting only on fail
             if type_ == "host":
-                passed = self._matches_host(
-                    param, substituted_host, target_hostname
-                )
+                hostval = configured_host or target_hostname
+                passed = self._pattern_matches(param, hostval)
                 if self._should_fail(passed, candidate):
                     return False
             if type_ == "originalhost":
@@ -363,14 +362,6 @@ class SSHConfig(object):
 
     def _should_fail(self, would_pass, candidate):
         return would_pass if candidate["negate"] else not would_pass
-
-    def _matches_host(self, param, substituted_host, target_hostname):
-        if substituted_host:
-            if not self._pattern_matches(param, substituted_host):
-                return False
-        elif not self._pattern_matches(param, target_hostname):
-            return False
-        return True
 
     def _expand_variables(self, config, hostname):
         """
