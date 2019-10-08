@@ -478,7 +478,6 @@ class SSHConfig(object):
                 raise ConfigParseError(
                     "Missing parameter to Match '{}' keyword".format(type_)
                 )
-            # TODO: continue parsing if not exec and comma separated?
             match["param"] = tokens.pop(0)
             matches.append(match)
         # Perform some (easier to do now than in the middle) validation that is
